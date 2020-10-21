@@ -17,33 +17,34 @@
           <el-submenu index="1">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span slot="title">导航一</span>
+              <span slot="title">管理首页</span>
             </template>
             <el-menu-item-group>
-              <span slot="title">分组一</span>
-              <el-menu-item index="1-1">选项1</el-menu-item>
-              <el-menu-item index="1-2">选项2</el-menu-item>
+              <!-- <span slot="title">分组1</span> -->
+              <el-submenu index="1-1">
+                <span slot="title">学员管理</span>
+                <el-menu-item index="1-1-1">学员项目管理</el-menu-item>
+              </el-submenu>
+              <el-menu-item index="1-2">考勤管理</el-menu-item>
+              <el-menu-item index="1-3">数据统计</el-menu-item>
+              <el-menu-item index="1-4">我的中心</el-menu-item>
             </el-menu-item-group>
-            <el-menu-item-group title="分组2">
-              <el-menu-item index="1-3">选项3</el-menu-item>
-            </el-menu-item-group>
-            <el-submenu index="1-4">
-              <span slot="title">选项4</span>
-              <el-menu-item index="1-4-1">选项1</el-menu-item>
-            </el-submenu>
+            <!-- <el-menu-item-group title="分组2"> -->
+
+            <!-- </el-menu-item-group> -->
           </el-submenu>
-          <el-menu-item index="2">
+          <!-- <el-menu-item index="2">
             <i class="el-icon-menu"></i>
             <span slot="title">导航二</span>
-          </el-menu-item>
-          <el-menu-item index="3" disabled>
+          </el-menu-item> -->
+          <!-- <el-menu-item index="3" disabled>
             <i class="el-icon-document"></i>
             <span slot="title">导航三</span>
           </el-menu-item>
           <el-menu-item index="4">
             <i class="el-icon-setting"></i>
             <span slot="title">导航四</span>
-          </el-menu-item>
+          </el-menu-item> -->
         </el-menu>
       </el-aside>
 
@@ -52,14 +53,20 @@
         <el-header>
           <el-row type="flex" class="row-bg" justify="space-between">
             <el-col :span="6">
-              <div class="grid-content bg-purple"><i class="el-icon-s-fold"></i></div>
+              <div class="grid-content bg-purple">
+                <i class="el-icon-s-fold"></i>
+              </div>
             </el-col>
             <el-col :span="6">
               <div class="grid-content bg-purple-light">千峰管理系统</div>
-              
             </el-col>
             <el-col :span="6">
-              <div class="grid-content bg-purple"><el-icon-user-solid></el-icon-user-solid> 欢迎您：<span>管理员</span><a href="#">退出</a></div>
+              <div class="grid-content bg-purple">
+                <el-avatar shape="square"
+                 :size="size"
+                 src="https://dss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3389267817,884087611&fm=26&gp=0.jpg"></el-avatar>
+                <span>欢迎您：</span><b class="nickname">{{userInfo.nickname}}</b><a href="#" class="quit" @click="quit">退出</a>
+              </div>
             </el-col>
           </el-row>
         </el-header>
@@ -72,7 +79,13 @@
 </template>
 
 <script>
+import { loginLog } from "@/api";
+import { mapState } from "vuex"
+// import subMenu from "../../components/subMenu"
 export default {
+  computed: {
+    ...mapState(["userInfo"])
+  },
   data() {
     return {
       isCollapse: true
@@ -84,18 +97,40 @@ export default {
     },
     handleClose(key, keyPath) {
       console.log(key, keyPath);
+    },
+    //退出登录
+    quit(){
+      // 清除token，userInfo
+      localStorage.removeItem("stu-token")
+      localStorage.removeItem("stu-userInfo")
+
+      this.$router.push("/login")
     }
+  },
+  // components: {
+  //   subMenu
+  // },
+  mounted() {
+    loginLog().then(res => {
+      console.log(res);
+    });
   }
 };
 </script>
  
 <style scoped>
+.quit{
+  cursor: pointer;
+  color: deeppink;
+}
 .el-header,
 .el-footer {
   /* background-color: #b3c0d1; */
   background-color: skyblue;
-  color: #333;
+  color: white;
   text-align: center;
+  font-size: 20px;
+  font-family: "楷体";
   /* line-height: 60px; */
 }
 
@@ -134,7 +169,7 @@ body > .el-container {
 /* 头部 */
 .el-row {
   margin-bottom: 20px;
-  background-color: skyblue;
+  /* background-color: skyblue; */
   /* &:last-child {
       margin-bottom: 0;
     } */
@@ -142,17 +177,16 @@ body > .el-container {
 .el-col {
   border-radius: 4px;
 }
-.bg-purple-dark {
+/* .bg-purple-dark {
   background: #99a9bf;
-}
+} */
 .bg-purple {
   /* background: #d3dce6; */
   line-height: 36px;
-
 }
-/* span{
-  
-} */
+span{
+  vertical-align: middle;
+}
 .bg-purple-light {
   /* background: #e5e9f2; */
   line-height: 36px;
@@ -163,13 +197,14 @@ body > .el-container {
 }
 .row-bg {
   padding: 10px 0;
-  background-color: #f9fafc;
+  /* background-color: #f9fafc; */
 }
-p{
+p {
   font-size: 14px;
   color: #fff;
 }
-a{
-  color: "red"
+.grid-content span {
+  margin-right: 10px;
+  text-decoration: black;
 }
 </style>

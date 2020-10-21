@@ -10,9 +10,30 @@ import "@/assets/styles/el-reset.css"
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
-Vue.config.productionTip = false;
+// Vue.config.productionTip = false;
 //在vue中使用全局ElementUI
 Vue.use(ElementUI);
+
+//路由前置钩子（导航守卫）
+router.beforeEach((to,from,next)=>{
+  // console.log(to);
+  // console.log(from);
+  // console.log(next);
+  let token = localStorage.getItem("stu-token")
+  if(token){
+    //用户登录过后localstorage就会有token，
+    //如果是注册页面或登录页面，直接放行
+    next()
+  }else{
+    if(to.path=="/login"){
+      //如果访问的页面是登录注册页面，放行
+      next()
+    }else{
+      //访问的不是登录注册页面，跳转到登录注册页面
+      next({path:"/login"})
+    }
+  }
+})
 
 //按需引入
 // import { Carousel,CarouselItem } from "element-ui"
