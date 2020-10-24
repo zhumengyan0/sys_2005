@@ -7,9 +7,10 @@
       loop="loop"
     ></video>
     <!-- 展示组件 -->
+    <img src="../../assets/img/pig1.jpg" alt="" class="img">
     <el-form
       :model="loginForm"
-      status-icon
+      
       :rules="rules"
       ref="loginForm"
       label-width="100px"
@@ -25,10 +26,21 @@
       </el-form-item>
       <el-form-item label="密码" prop="password">
         <el-input
+          @keydown.native.enter="submitForm('loginForm')"
           type="password"
           v-model="loginForm.password"
           autocomplete="off"
         ></el-input>
+      </el-form-item>
+      <!-- 验证码 -->
+      <el-form-item label="验证码" prop="captcha">
+        <el-input
+          type="text"
+          class="captcha"
+          v-model="loginForm.captcha"
+          autocomplete="off"
+        ></el-input>
+        <span class="captcha-svg" v-html="captchaSvg" @click="refreshCaptcha">12345</span>
       </el-form-item>
       <!-- <el-form-item label="年龄" prop="age">
         <el-input v-model.number="loginForm.age"></el-input>
@@ -45,19 +57,20 @@
 
 <script>
 //引入login.js文件
-import { login } from "@/api";
+import { login,getCaptcha,verifyCaptcha } from "@/api";
 import {mapMutations} from "vuex"
-console.log(login);
+// console.log(login);
 export default {
   //登入逻辑实现
   //1.收集用户输入的username和password传递给后端
   data() {
+    //校验用户名
     var validateUsername = (rule, value, callback) => {
       //jsDoc的注释方式
       //@param {object} rule一个表单验证对象
       //@param {string} value 输入框中的输入值
-      console.log(rule);
-      console.log(value);
+      // console.log(rule);
+      // console.log(value);
       // 用户名正则：4-16位（字母，下划线，数字，-）
       // var uPattern = /^[a-zA-Z0-9_-]{4,16}$/
       if (!value) {
@@ -66,6 +79,8 @@ export default {
         callback();
       }
     };
+
+    //校验用户密码
     var validatePassword = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入密码"));
@@ -73,25 +88,62 @@ export default {
         callback();
       }
     };
+
+    //校验验证码
+    var validateCaptcha = (rule, value, callback) => {
+      if (value === "" || value.length!==5) {
+        callback(new Error("请输入验证码"));
+      } else {
+        callback();
+      }
+    };
     return {
+      captchaSvg: "",//从服务器获取下来的验证码captchaSvg结构
       loginForm: {
         username: "",
-        password: ""
+        password: "",
+        captcha: ""
         // age: ""
       },
       rules: {
         username: [{ validator: validateUsername, trigger: "blur" }],
-        password: [{ validator: validatePassword, trigger: "blur" }]
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        captcha: [{ validator: validateCaptcha, trigger: "blur" }]
         // age: [{ validator: checkAge, trigger: "blur" }]
       }
     };
   },
+  //钩子函数
+  mounted () {
+    this.set_captcha()
+  },
   methods: {
+    //设置验证码
+    set_captcha(){
+      //页面一加载，获取验证码
+      getCaptcha()
+      .then(res=>{
+        this.captchaSvg = res.data.img
+      })
+    },
+
+    //刷新验证码
+    refreshCaptcha(){
+      this.set_captcha()
+    },
+    
     ...mapMutations(['SET_USERINFO']),
     submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           //代表本地校验通过
+          //先验证验证码是否正确，如果正确再发送登入请求
+          let verifyRes = await verifyCaptcha(this.loginForm.captcha)
+          if(!verifyRes.data.state){
+            //验证码不正确时
+            this.$message.error("验证码输入错误，请重新输入")
+            return
+          }
           //收集用户输入的username和password
           //调用login方法,发送登入请求
           //打开登录加载动画
@@ -114,7 +166,8 @@ export default {
 
                 //更改vuex中state['userInfo']的值
                 this.SET_USERINFO(res.data.userInfo)
-                this.$router.push("/home")
+                
+                this.$router.push("/Welcome")
                 this.$message.success("登录成功")
               } else {
                 //用户名或密码错误
@@ -138,19 +191,30 @@ export default {
 </script>
 
 <style scoped>
+/* //验证码 */
+
+
 .login {
   /* position: relative; */
   overflow: hidden;
   width: 100%;
   height: 100%;
   display: block;
+  /* background-image: '../../assets/img/pig.jpg'; */
+}
+.img{
+  z-index: 99;
+  position: absolute;
+  top: 100px;
+  left: 200px;
+  opacity: .3;
 }
 /* 表单样式 */
 .el-form {
   /* z-index: 99; */
   position: absolute;
-  top: 50px;
-  left: 50px;
+  top: 150px;
+  right: 150px;
   width: 400px;
   height: 520px;
   border: 1px solid #ccc;
@@ -173,5 +237,20 @@ video {
   position: fixed;
   right: 0;
   bottom: 0;
+  z-index: -99;
 }
+/* 验证码 */
+span{
+  position: absolute;
+  left: 101px;
+  background-color: #fff;
+  display: inline-block;
+  height: 44px;
+  width: 139px;
+  border-radius: 5px;
+  text-align: center;
+  line-height: 36px;
+  cursor: pointer;
+}
+
 </style>

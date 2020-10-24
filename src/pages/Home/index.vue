@@ -2,49 +2,14 @@
   <div class="home">
     <el-container>
       <!-- 侧边栏 -->
-      <el-aside width="200px">
-        <el-radio-group v-model="isCollapse" style="margin-bottom: 20px;">
-          <el-radio-button :label="false">展开</el-radio-button>
-          <el-radio-button :label="true">收起</el-radio-button>
-        </el-radio-group>
+      <el-aside width="200">
         <el-menu
-          default-active="1-4-1"
+          :default-active="$route.path"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
+          :router="true"
           :collapse="isCollapse"
         >
-          <el-submenu index="1">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span slot="title">管理首页</span>
-            </template>
-            <el-menu-item-group>
-              <!-- <span slot="title">分组1</span> -->
-              <el-submenu index="1-1">
-                <span slot="title">学员管理</span>
-                <el-menu-item index="1-1-1">学员项目管理</el-menu-item>
-              </el-submenu>
-              <el-menu-item index="1-2">考勤管理</el-menu-item>
-              <el-menu-item index="1-3">数据统计</el-menu-item>
-              <el-menu-item index="1-4">我的中心</el-menu-item>
-            </el-menu-item-group>
-            <!-- <el-menu-item-group title="分组2"> -->
-
-            <!-- </el-menu-item-group> -->
-          </el-submenu>
-          <!-- <el-menu-item index="2">
-            <i class="el-icon-menu"></i>
-            <span slot="title">导航二</span>
-          </el-menu-item> -->
-          <!-- <el-menu-item index="3" disabled>
-            <i class="el-icon-document"></i>
-            <span slot="title">导航三</span>
-          </el-menu-item>
-          <el-menu-item index="4">
-            <i class="el-icon-setting"></i>
-            <span slot="title">导航四</span>
-          </el-menu-item> -->
+          <qf-sub-menu :sideMenu="menuList"></qf-sub-menu>
         </el-menu>
       </el-aside>
 
@@ -54,41 +19,68 @@
           <el-row type="flex" class="row-bg" justify="space-between">
             <el-col :span="6">
               <div class="grid-content bg-purple">
-                <i class="el-icon-s-fold"></i>
+                <div class="dong" @click="change">
+                  <i href="#" v-if="isChange" class="iconfont icon-shouqi"></i>
+                  <i
+                    href="#"
+                    v-else-if="!isChange"
+                    class="iconfont icon-zhankai"
+                  ></i>
+                </div>
               </div>
             </el-col>
             <el-col :span="6">
-              <div class="grid-content bg-purple-light">千峰管理系统</div>
+              <div class="grid-content bg-purple-light center">
+                <span>千峰管理系统</span>
+              </div>
             </el-col>
             <el-col :span="6">
-              <div class="grid-content bg-purple">
-                <el-avatar shape="square"
-                 :size="size"
-                 src="https://dss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3389267817,884087611&fm=26&gp=0.jpg"></el-avatar>
-                <span>欢迎您：</span><b class="nickname">{{userInfo.nickname}}</b><a href="#" class="quit" @click="quit">退出</a>
+              <div class="grid-content bg-purple center">
+                <el-avatar
+                  shape="square"
+                  :size="40"
+                  src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=2181797468,3537497331&fm=11&gp=0.jpg"
+                ></el-avatar>
+                <span>欢迎您：</span
+                ><b class="nickname">{{ userInfo.nickname }}</b
+                ><a href="#" class="quit" @click="quit">退出</a>
               </div>
             </el-col>
           </el-row>
         </el-header>
 
         <!-- 主体区域 -->
-        <el-main>Main</el-main>
+        <el-main>
+          <!-- 面包屑 -->
+          <el-breadcrumb separator-class="el-icon-arrow-right">
+            <el-breadcrumb-item :to="{ path: '/Welcome' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{path:crumb.path}" v-for="crumb in crumbs" :key="crumb.index">
+              {{crumb.meta.name}}
+            </el-breadcrumb-item>
+          </el-breadcrumb>
+          <router-view></router-view>
+        </el-main>
       </el-container>
     </el-container>
+    <!-- <home></home>递归 -->
   </div>
 </template>
 
 <script>
-import { loginLog } from "@/api";
-import { mapState } from "vuex"
+// import { getloginLog } from "@/api";
+import { mapState } from "vuex";
 // import subMenu from "../../components/subMenu"
 export default {
+  // name: "home",
+  //组件循环
   computed: {
-    ...mapState(["userInfo"])
+    //映射
+    ...mapState(["userInfo", "menuList","crumbs"])
   },
   data() {
     return {
-      isCollapse: true
+      isCollapse: false,
+      isChange: false
     };
   },
   methods: {
@@ -99,36 +91,45 @@ export default {
       console.log(key, keyPath);
     },
     //退出登录
-    quit(){
+    quit() {
       // 清除token，userInfo
-      localStorage.removeItem("stu-token")
-      localStorage.removeItem("stu-userInfo")
-
-      this.$router.push("/login")
+      localStorage.removeItem("stu-token");
+      localStorage.removeItem("stu-userInfo");
+      //跳转到登录页
+      this.$router.push("/login");
+      //刷新页面
+      window.location.reload();
+    },
+    change() {
+      this.isCollapse = !this.isCollapse;
+      this.isChange = !this.isChange;
     }
   },
   // components: {
   //   subMenu
   // },
   mounted() {
-    loginLog().then(res => {
-      console.log(res);
-    });
+    // getloginLog().then(res => {
+    //   console.log(res);
+    // });
+
+    //触发actions
+    // this.$store.dispatch("FETCH_MENULIST")
   }
 };
 </script>
  
 <style scoped>
-.quit{
+.quit {
   cursor: pointer;
   color: deeppink;
 }
 .el-header,
 .el-footer {
   /* background-color: #b3c0d1; */
-  background-color: skyblue;
+  background-color: pink;
   color: white;
-  text-align: center;
+  /* text-align: center; */
   font-size: 20px;
   font-family: "楷体";
   /* line-height: 60px; */
@@ -160,7 +161,7 @@ body > .el-container {
 .el-container:nth-child(7) .el-aside {
   line-height: 320px;
 }
-/* 侧边栏 */
+/* 侧边栏 动画效果*/
 .el-menu-vertical-demo:not(.el-menu--collapse) {
   width: 200px;
   min-height: 400px;
@@ -184,7 +185,7 @@ body > .el-container {
   /* background: #d3dce6; */
   line-height: 36px;
 }
-span{
+span {
   vertical-align: middle;
 }
 .bg-purple-light {
@@ -206,5 +207,17 @@ p {
 .grid-content span {
   margin-right: 10px;
   text-decoration: black;
+}
+b {
+  margin-right: 10px;
+}
+.center {
+  text-align: center;
+}
+.icon-daohangshouqi- {
+  font-size: 30px;
+}
+.iconfont {
+  font-size: 25px;
 }
 </style>

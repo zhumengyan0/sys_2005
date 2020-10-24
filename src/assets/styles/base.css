@@ -22,3 +22,44 @@ a{
 html,body,#app,.home,.el-container{
     height: 100%;
 }
+
+/* //收缩菜单 */
+.el-menu--collapse .el-submenu__title span {
+    height: 0;
+    width: 0;
+    overflow: hidden;
+    visibility: hidden;
+    display: inline-block;
+}
+
+.el-menu--collapse .el-menu-item .el-submenu__icon-arrow, .el-menu--collapse .el-submenu .el-submenu__title .el-submenu__icon-arrow {
+    display: none;
+}
+.el-menu-item-group .el-menu-item{
+   padding:0 0 0 30px;
+
+}
+
+.el-menu-item-group .el-menu-item-group__title{
+    padding:0
+}
+
+/* //nprogress */
+#nprogress .bar{
+    background-color: deeppink !important;
+}
+/* //验证码 */
+.el-input{
+    
+    position: absolute;
+  }
+  .el-form-item__content{
+    vertical-align: middle;
+  }
+  .captcha{
+    width: 120px;
+    
+  }
+  .el-input__inner{
+      background-color: transparent !important;
+  }
